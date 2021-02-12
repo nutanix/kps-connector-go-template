@@ -11,4 +11,4 @@ input:
 output:
   localEdge:
     type: Connector
-    endpointName: templateconnectorstream-out
+    endpointName: templateconnectorstream-egress
