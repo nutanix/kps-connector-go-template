@@ -1,6 +1,6 @@
 kind: Project
-name: TestNatsDataDriverProject
-description: TestNatsDataDriver project
+name: TemplateConnectorProject
+description: Template Connector project
 users: ["test"]
 edges: ["sd1.0"]
 cloudProfiles: []

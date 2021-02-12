@@ -1,5 +1,5 @@
 {
-  "name": "templatedriverstream-out",
+  "name": "templateconnectorstream-out",
   "connectorInstanceID": "f29673b0-10f4-44dc-b4fd-02331ace2ffa",
   "labels": [],
   "direction": "EGRESS",
