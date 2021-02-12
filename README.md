@@ -3,30 +3,34 @@ Welcome to the Golang template for building KPS Connectors. This template is an 
 gRPC service contract defined in [KPS Connector IDL](https://github.com/nutanix/kps-connector-idl) built using the
 [KPS Connector Go SDK](https://github.com/nutanix/kps-connector-idl).
 
-The main goal of this template is to provide a basic (yet fully functional) shell connector that connector developers
+The main goal of this template is to provide a basic fully functional shell connector that connector developers
 can use to quickly build new connectors. The template implements the gRPC interface, handles stream and config updates,
-and publishes basic status and alert events during the connector runtime. The developer using the template to build a
-custom connector needs to only write the connection code for getting data in from and sending data out to a given data
+and publishes basic status and alert events during the connector runtime. 
+
+By using the template to build a custom connector, you only need to write the connection code to get data in from and send data out to a given data
 service. The bundled `Makefile` and github actions workflow provide a fully prepared CI setup and ensure Golang code
-standards are maintained. The bundled `Dockerfile` builds the code within the container and then copies over the binary
+standards are maintained. The bundled `Dockerfile` builds the code within the container and then copies the binary
 to another container that is used to run the binary.
 
-## How To?
-There are three main phases to build and run a custom KPS Connector
+## How Do I Build and Run a Connector?
+There are three main phases to build and run a custom KPS Connector.
+- Develop a connector
+- Package the connector
+- Deploy the connector
 
 ### Develop a connector
 #### Overview
 - Start by cloning this repo
 - Copy all the contents into another repo in which you intend to build the connector
 - Fill in the `TODO` blocks in `connector/template.go` and the connector name in `connector/config.go`
-- Replace the default values marked with `TODO` comments for connector name, docker repository uri, and docker image tag in `Makefile`
+- Replace the default values marked with `TODO` comments for connector name, docker repository URI, and docker image tag in `Makefile`
 - Change the module name in `go.mod` file
 
 #### Understanding and updating `connectors/template.go`
 `connectors/template.go` has three important structs `streamMetadata`, `consumer` and `producer`
-- `streamMetadata` is a go struct that is used to unmarshal the `streamParameterSchema` defined in
+- `streamMetadata` is a go struct used to unmarshall the `streamParameterSchema` defined in
 `samples/connector_class.json`
-    - `mapToStreamMetadata` is function that translates the `stream.Metadata` object from an untyped `map[string]interface`
+    - `mapToStreamMetadata` is a function that translates the `stream.Metadata` object from an untyped `map[string]interface`
     to a typed struct
 - Consumer connects to the custom data service defined by ingress stream when the `subscribe` method is called and makes
 the data available in each successive `nextMsg` method call
@@ -34,29 +38,28 @@ the data available in each successive `nextMsg` method call
     - `subscribe` method contains the logic for creating a connection to the custom data service defined by the ingress stream
     - `nextMsg` method follows the iterator pattern and provides the next message to be consumed from the connection created by
     the `subscribe` method above.
-    - If there is no data to pass `nextMsg` is supposed
-to block the call otherwise the `consumerLoop` in `connector/streams.go` will go in a tight loop
-- Producer connects to the custom data service defined by the egress stream when the `connect` method is called and
+    - If there is no data to pass, `nextMsg` should block the call. Otherwise the `consumerLoop` in `connector/streams.go` will go in a tight loop
+- Producer connects to the custom data service defined by the egress stream when the `connect` method is called. It then
 produces the message it receives in the `subscribeMsgHandler` callback to the custom data service
     - `newProducer` is a constructor for the `producer` object
     - `connect` method contains the logic for creating a connection to the custom data service defined by the egress stream
-    - `subscribeMsgHandler` is a callback function that gets called each time a message is received to be publisdhed on
+    - `subscribeMsgHandler` is a callback function called each time a message is received and to be published on
     the connection established in the `connect` method above. This message stores the logic for publishing data to the
     corresponding connection.
 
 ### Package the connector
-- Run `make`: The bundled `Makefile` and `Dockerfile` will ensure that the connector is compiled and a corresponding
-docker image is created with the docker uri and tag defined in `Makefile`
+- Run `make`.  The bundled `Makefile` and `Dockerfile` helps ensure that the connector is compiled and a corresponding
+docker image is created with the docker URI and tag defined in `Makefile`
 - Ensure you have `docker push` access to the docker registry specified in the `Makefile`
-- Run `make publish`: This will publish the docker image created in the `make` step to the docker registry defined in `Makefile`
+- Run `make publish`. This step publishes the docker image created in the `make` step to the docker registry defined in `Makefile`
 
 ### Deploy the connector
-In order to use the connector, you need to follow these steps:
+To use the connector, follow these steps:
 
 #### Create a class
 Update the `samples/connector_class.json` with the following information.
-- JSON schema for static parameters (property `staticParameterSchema`) used for templating (for this template, the
-docker image tag is a templatized value that is provided during the instance creation)
+- JSON schema for static parameters (property `staticParameterSchema`) used for templating. For this template, the
+docker image tag is a templatized value that is provided during the instance creation.
 - JSON schema for dynamic config (property `configParameterSchema`) used for runtime config change
 - JSON schema for stream (property `streamParameterSchema`) used for conveying connection information
 
@@ -110,7 +113,7 @@ Update the `samples/pipeline.yaml` with the following information.
 - Category selectors for matching the ingress connector streams (property `input.categorySelectors`)
 - Output endpoint to match the egress stream (prpoerty `output.localEdge.endpointName`)
 
-You can create the data pipeline by using the CLI tool
+You can create the data pipeline by using the kps CLI tool
 ```
 kps create datapipeline -f samples/pipeline.yaml
 ```
