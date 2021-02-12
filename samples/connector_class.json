@@ -2,7 +2,7 @@
   "name": "templateconnector",
   "description": "This is a class definition of KPS connector template",
   "connectorVersion": "1.0",
-  "minSvcDomainVersion": "3.0.0",
+  "minSvcDomainVersion": "2.3.0",
   "type": "BIDIRECTIONAL",
   "staticParameterSchema": {
     "type": "object",
