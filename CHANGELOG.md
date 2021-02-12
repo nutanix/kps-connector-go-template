@@ -13,5 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the initial template
 - Added Makefile
 - Added Github Actions CI job
+- Added a README.md file
 
 ### Updated
