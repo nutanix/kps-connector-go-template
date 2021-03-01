@@ -1,3 +1,4 @@
+# Copyright (c) 2021 Nutanix, Inc.
 SHELL := /usr/bin/env bash -o pipefail
 
 # TODO: Replace with the actual connector name
