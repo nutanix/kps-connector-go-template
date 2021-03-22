@@ -1,5 +1,3 @@
-# Copyright (c) 2021 Nutanix, Inc.
-
 # ---------- This container is the build container ---------- #
 
 FROM golang:latest as build
