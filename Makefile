@@ -64,10 +64,6 @@ lint: $(GOLINT) $(GOSEC)
 	echo "Checking security vulnerabilities..."
 	$(GOSEC) -quiet ./... 2>&1 | tee -a lint.log
 
-.PHONY: vendor
-vendor:
-	go mod vendor
-
 .PHONY: test
 test:
 	go test -v ./...
@@ -82,7 +78,6 @@ cover:
 
 .PHONY: local
 local:
-	make vendor
 	make lint
 	make build
 	make test
