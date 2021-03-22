@@ -3,8 +3,10 @@ package connector
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
+	"github.com/golang/protobuf/jsonpb"
 	connectorpb "github.com/nutanix/kps-connector-go-sdk/connector/v1"
 	"github.com/nutanix/kps-connector-go-sdk/events"
 	"github.com/nutanix/kps-connector-go-sdk/transport"
@@ -98,15 +100,31 @@ func (d *Connector) setStreamToTransport(ctx context.Context, stream *connectorp
 	}
 
 	ctx, cancelfunc := context.WithCancel(context.Background())
-	d.activeInStreams[stream.Id] = cancelfunc
 
-	metadata := mapToStreamMetadata(stream.GetMetadata().AsMap())
+	marshaller := jsonpb.Marshaler{}
+	jsonpbstr, err := marshaller.MarshalToString(stream.GetMetadata())
+	if err != nil {
+		log.Printf("unable to marshal jsonpb: %+v", stream.GetMetadata())
+		cancelfunc()
+		return err
+	}
+	metadataMap := make(map[string]interface{})
+	err = json.Unmarshal([]byte(jsonpbstr), &metadataMap)
+	if err != nil {
+		log.Printf("unable to unmarshal json from jsonpb: %s", jsonpbstr)
+		cancelfunc()
+		return err
+	}
+
+	metadata := mapToStreamMetadata(metadataMap)
 	consumer := newConsumer()
 	if err := consumer.subscribe(ctx, metadata); err != nil {
 		_ = streamUnhealthyStatus.Publish(events.StatusWithStreamID(stream.GetId()), events.StatusWithEventMetadata(&events.EventMetadata{
 			StreamID:     stream.GetId(),
 			ErrorMessage: err.Error(),
 		}))
+		cancelfunc()
+		log.Printf("unable to subscribe to ingress stream: %s", err)
 		return err
 	}
 
@@ -116,8 +134,12 @@ func (d *Connector) setStreamToTransport(ctx context.Context, stream *connectorp
 			StreamID:     stream.GetId(),
 			ErrorMessage: err.Error(),
 		}))
+		cancelfunc()
+		log.Printf("unable to create a transport client: %s", err)
 		return err
 	}
+
+	d.activeInStreams[stream.Id] = cancelfunc
 
 	go consumerLoop(ctx, stream, consumer, tclt)
 
