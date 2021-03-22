@@ -116,7 +116,7 @@ func (d *Connector) setStreamToTransport(ctx context.Context, stream *connectorp
 		return err
 	}
 
-	metadata := mapToStreamMetadata(stream.GetMetadata().AsMap())
+	metadata := mapToStreamMetadata(metadataMap)
 	consumer := newConsumer()
 	if err := consumer.subscribe(ctx, metadata); err != nil {
 		_ = streamUnhealthyStatus.Publish(events.StatusWithStreamID(stream.GetId()), events.StatusWithEventMetadata(&events.EventMetadata{
